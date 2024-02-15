@@ -43,52 +43,52 @@
 
 ## 🌲Project Structure
 ```css
-    online-bookstore-ms/
+online-bookstore-ms/
 
-    |__ README.md
-    |__ LICENSE
-    |__ .gitignore
+|__ README.md
+|__ LICENSE
+|__ .gitignore
 
-    |__ docs/
-    |__ requirements.md
-    |__ architecture.md
-    |__ system-design.md
-    |__ database-schema.sql
-    |__ er-diagram.png
-    |__ class-diagram.uml
-    |__ sequence-diagram.uml
-    |__ other-diagrams.uml (optional)
+|__ docs/
+  |__ requirements.md
+  |__ architecture.md
+  |__ system-design.md
+  |__ database-schema.sql
+  |__ er-diagram.png
+  |__ class-diagram.uml
+  |__ sequence-diagram.uml
+  |__ other-diagrams.uml (optional)
 
-    |__ src/
-    |__ backend/
-        |__ java/
-        |__ com.example.bookstore
-            |__ model/
-            |__ service/
-            |__ repository/
-            |__ util/
-        |__ resources/
-        |__ application.properties
-        |__ database.properties
-    |__ frontend/
-        |__ static/
-        |__ css/
-        |__ img/
-        |__ js/
-        |__ index.html
-        |__ components/
-        |__ pages/
-        |__ other-folders (optional)
+|__ src/
+  |__ backend/
+    |__ java/
+      |__ com.example.bookstore
+        |__ model/
+        |__ service/
+        |__ repository/
+        |__ util/
+    |__ resources/
+      |__ application.properties
+      |__ database.properties
+  |__ frontend/
+    |__ static/
+      |__ css/
+      |__ img/
+      |__ js/
+    |__ index.html
+    |__ components/
+    |__ pages/
+    |__ other-folders (optional)
 
-    |__ db/
-    |__ init.sql
-    |__ test-data.sql (optional)
+|__ db/
+  |__ init.sql
+  |__ test-data.sql (optional)
 
-    |__ tests/
-    |__ backend/
-        |__ unit/
-        |__ integration/
-    |__ frontend/
-        |__ unit/
-        |__ integration/
+|__ tests/
+  |__ backend/
+    |__ unit/
+    |__ integration/
+  |__ frontend/
+    |__ unit/
+    |__ integration/
 ```
