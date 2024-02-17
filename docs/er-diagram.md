@@ -1,4 +1,4 @@
-### ER Diagram
+## ER Diagram
 ```
 1. check all not null, check constraints and unique constraints
 2. check all foreign keys & primary keys
