@@ -63,8 +63,8 @@ CONSTRAINT PK_book_category
 - book_publish_date
 - author_id [FK-> author.author_id]
 - category_id [FK-> book_category.category_id]
-- unit_price [check >=0]
-- unit_in_stock [check >=0] 
+- book_price [check >=0]
+- available_quantity [check >=0] 
 - discontinued [Default: false]
 - book_cover_image
 - book_publisher
@@ -85,8 +85,8 @@ CREATE TABLE book
   book_publish_date  DATE, 
   author_id  NUMBER NOT NULL, 
   category_id  NUMBER NOT NULL,
-  unit_price  NUMBER, 
-  unit_in_stock  NUMBER, 
+  book_price  NUMBER, 
+  available_quantity  NUMBER, 
   discontinued  NUMBER(1) NOT NULL,
   book_cover_image VARCHAR2(255), 
   book_publisher VARCHAR2(100),
@@ -95,8 +95,8 @@ CREATE TABLE book
   book_isbn VARCHAR2(13),
 CONSTRAINT PK_book 
   PRIMARY KEY (book_id), 
-CONSTRAINT CK_book_unit_price   CHECK ((unit_price >= 0)), 
-CONSTRAINT CK_unit_in_stock   CHECK ((unit_in_stock >= 0)), 
+CONSTRAINT CK_book_book_price   CHECK ((book_price >= 0)), 
+CONSTRAINT CK_available_quantity   CHECK ((available_quantity >= 0)), 
 CONSTRAINT FK_book_author FOREIGN KEY (author_id) REFERENCES author(author_id), 
 CONSTRAINT FK_book_category FOREIGN KEY (category_id) REFERENCES book_category(category_id)
 ) 
@@ -198,7 +198,7 @@ CONSTRAINT FK_customer_customer_address FOREIGN KEY (subscription_status_id) REF
 - state [not null]
 - country
 - pincode (or postalcode) [not null] - ⚠️ suggest a name
-- other_address_details
+- landmark
 - phone [not null]
   - Optional:
     - country
@@ -215,7 +215,7 @@ CREATE TABLE customer_address (
     state VARCHAR2(100),
     country VARCHAR2(100),
     postalcode VARCHAR2(6),
-    other_address_details VARCHAR2(255),
+    landmark VARCHAR2(255),
     phone VARCHAR2(24), 
 CONSTRAINT PK_customer_address 
   PRIMARY KEY (address_type, customer_id), 
@@ -318,9 +318,9 @@ CONSTRAINT FK_book_rating_customer FOREIGN KEY (customer_id) REFERENCES customer
 - address_type (customer_id & customer_address_type) -> Delivery Address   [FK-> customer_addressaddress_type]
 - order_date [auto calculated current date]
 - shipped_date (basic algorithm to calculate the shipping date)
-- order_discount (applying discount by customer's subscription status) (initial random data insertion) "function" to calculate the total price with discount with 10 or 20% discount [auto calculated SUM(order_detail.unit_price) WHERE order_id = order_detail.order_id]
-- order_total_cost (calculating with the unit_price & unit_discount) [auto calculated/PLSQL]
-                    - ( SUM(order_detail.unit_price * (1 - order_detail.unit_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2)`
+- order_discount (applying discount by customer's subscription status) (initial random data insertion) "function" to calculate the total price with discount with 10 or 20% discount [auto calculated SUM(order_detail.book_price) WHERE order_id = order_detail.order_id]
+- order_total_cost (calculating with the book_price & unit_discount) [auto calculated/PLSQL]
+                    - ( SUM(order_detail.book_price * (1 - order_detail.unit_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2)`
 - order_status (pending, processing, shipped, delivered, cancelled, returned, etc.)
   - Optional:
     - required_date
@@ -349,7 +349,7 @@ CONSTRAINT FK_order_customer FOREIGN KEY (address_type) REFERENCES customer_addr
 ### order_detail
 - order_id [FK-> order.order_id] [PK]
 - book_id [FK-> book.book_id] [PK]
-- unit_price [auto calculated book.unit_price] 
+- book_price [auto calculated book.book_price] 
 - unit_discount [0.0 - 1.0]
 - quantity
   - Optional:
@@ -359,19 +359,19 @@ CREATE TABLE order_detail
 ( 
   order_id  NUMBER NOT NULL, 
   book_id  NUMBER NOT NULL, 
-  unit_price  NUMBER NOT NULL, 
+  book_price  NUMBER NOT NULL, 
   unit_discount  NUMBER NOT NULL, 
   quantity  NUMBER NOT NULL, 
 CONSTRAINT PK_order_detail 
   PRIMARY KEY (order_id, book_id), 
-CONSTRAINT CK_unit_price   CHECK ((unit_price >= 0)), 
+CONSTRAINT CK_book_price   CHECK ((book_price >= 0)), 
 CONSTRAINT CK_unit_discount   CHECK ((unit_discount >= 0 and unit_discount <= 1)), 
 CONSTRAINT CK_quantity   CHECK ((quantity > 0)), 
 CONSTRAINT FK_OrderDetails_Orders FOREIGN KEY (order_id) REFERENCES order(order_id), 
 CONSTRAINT FK_OrderDetails_Products FOREIGN KEY (book_id) REFERENCES book(book_id)
 )
 /
--- create a insert trigger to calculate the unit_price
+-- create a insert trigger to calculate the book_price
 ```
 
 ### website_rating - user_reviews for the website
