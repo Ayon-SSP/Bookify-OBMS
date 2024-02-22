@@ -25,7 +25,7 @@ CREATE TABLE author
   author_id  NUMBER NOT NULL, 
   author_name  VARCHAR2(50) NOT NULL, 
   author_bio  VARCHAR2(300), 
-  author_score NUMBER(5, 2), 
+  author_score NUMBER, 
   author_image  VARCHAR2(255),
   author_birth_date DATE,
 CONSTRAINT PK_author 
@@ -50,7 +50,8 @@ CREATE TABLE book_category
   category_description  VARCHAR2(300), 
   category_image  VARCHAR2(255),
 CONSTRAINT PK_book_category
-  PRIMARY KEY (category_id)
+  PRIMARY KEY (category_id),
+CONSTRAINT CK_author_score   CHECK ((author_score >= 0 AND author_score <= 5))
 )
 / 
 
@@ -95,7 +96,9 @@ CREATE TABLE book
   book_isbn VARCHAR2(13),
 CONSTRAINT PK_book 
   PRIMARY KEY (book_id), 
-CONSTRAINT CK_book_book_price   CHECK ((book_price >= 0)), 
+CONSTRAINT CK_book_book_price   CHECK ((book_price > 0)), 
+CONSTRAINT CK_book_pages   CHECK ((book_pages >= 0)), 
+CONSTRAINT CK_discontinued   CHECK ((discontinued = 0 or discontinued = 1)),
 CONSTRAINT CK_available_quantity   CHECK ((available_quantity >= 0)), 
 CONSTRAINT FK_book_author FOREIGN KEY (author_id) REFERENCES author(author_id), 
 CONSTRAINT FK_book_category FOREIGN KEY (category_id) REFERENCES book_category(category_id)
@@ -146,7 +149,8 @@ CREATE TABLE subscription
   subscription_price NUMBER,
   subscription_duration VARCHAR2(3),
 CONSTRAINT PK_subscription 
-  PRIMARY KEY (subscription_status_id)
+  PRIMARY KEY (subscription_status_id),
+CONSTRAINT CK_subscription_price   CHECK ((subscription_price > 0))
 ) 
 / 
 ```
@@ -236,7 +240,7 @@ CONSTRAINT FK_customer_address_customer FOREIGN KEY (customer_id) REFERENCES cus
     - added_date
     - removed_date
 
-```sql
+```sql  
 CREATE TABLE shopping_cart 
 (
   customer_id  NUMBER NOT NULL, 
@@ -319,8 +323,8 @@ CONSTRAINT FK_book_rating_customer FOREIGN KEY (customer_id) REFERENCES customer
 - order_date [auto calculated current date]
 - shipped_date (basic algorithm to calculate the shipping date)
 - order_discount (applying discount by customer's subscription status) (initial random data insertion) "function" to calculate the total price with discount with 10 or 20% discount [auto calculated SUM(order_detail.book_price) WHERE order_id = order_detail.order_id]
-- order_total_cost (calculating with the book_price & unit_discount) [auto calculated/PLSQL]
-                    - ( SUM(order_detail.book_price * (1 - order_detail.unit_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2)`
+- order_total_cost (calculating with the book_price & book_discount) [auto calculated/PLSQL]
+                    - ( SUM(order_detail.book_price * (1 - order_detail.book_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2)`
 - order_status (pending, processing, shipped, delivered, cancelled, returned, etc.)
   - Optional:
     - required_date
@@ -350,7 +354,7 @@ CONSTRAINT FK_order_customer FOREIGN KEY (address_type) REFERENCES customer_addr
 - order_id [FK-> order.order_id] [PK]
 - book_id [FK-> book.book_id] [PK]
 - book_price [auto calculated book.book_price] 
-- unit_discount [0.0 - 1.0]
+- book_discount [0.0 - 1.0]
 - quantity
   - Optional:
 
@@ -360,18 +364,20 @@ CREATE TABLE order_detail
   order_id  NUMBER NOT NULL, 
   book_id  NUMBER NOT NULL, 
   book_price  NUMBER NOT NULL, 
-  unit_discount  NUMBER NOT NULL, 
+  book_discount  NUMBER NOT NULL, 
   quantity  NUMBER NOT NULL, 
 CONSTRAINT PK_order_detail 
   PRIMARY KEY (order_id, book_id), 
 CONSTRAINT CK_book_price   CHECK ((book_price >= 0)), 
-CONSTRAINT CK_unit_discount   CHECK ((unit_discount >= 0 and unit_discount <= 1)), 
+CONSTRAINT CK_book_discount   CHECK ((book_discount >= 0 and book_discount <= 1)), 
 CONSTRAINT CK_quantity   CHECK ((quantity > 0)), 
 CONSTRAINT FK_OrderDetails_Orders FOREIGN KEY (order_id) REFERENCES order(order_id), 
 CONSTRAINT FK_OrderDetails_Products FOREIGN KEY (book_id) REFERENCES book(book_id)
 )
 /
 -- create a insert trigger to calculate the book_price
+-- create a avalable stock count trigger
+-- create a update trigger to update the available stock count -...
 ```
 
 ### website_rating - user_reviews for the website
@@ -391,16 +397,22 @@ CREATE TABLE website_rating
 - Publishers(Optional)
 
 Id's starts with 
-  genre_id: 100 101 ...
-  author_id: 200 201 ...
-  book_id: 300 301 ...
-  subscription_status_id: 400 401 ...
-  customer_id: 500 501 ...
-  shopping_cart_id: 800 801 ...
-  order_id: 600 601 ...
-  address_id: 700 701 ...
+  genre_id: Gen100 101 ...
+  author_id: Auth200 201 ...
+  book_id: Boo300 301 ...
+  subscription_status_id: Sub400 401 ...
+  customer_id: cus500 501 ...
+  shopping_cart_id: sho800 801 ...
+  order_id: ord600 601 ...
+  address_id: add700 701 ...
+  wishlist_id: wis900 901 ...
+  user_review_id: rev1000 1001 ...
+  SUBSCRIPTION_ID: SUB100 101 ...
 
 ## T0do
 - TODO: auto increment id's
 - TODO: format before commit
-- TODO: on delete cascade and check ';'
+- TODO: on delete cascade or null and check ';'
+- TODO: Think about the how to give custome names to id columns
+- TODO: DISIDE THE largest limit for the id columns.
+- designing all the triggers
