@@ -380,19 +380,6 @@ CONSTRAINT FK_OrderDetails_Products FOREIGN KEY (book_id) REFERENCES book(book_i
 -- create a update trigger to update the available stock count -...
 ```
 
-### website_rating - user_reviews for the website
-- avg_rating
-- total_reviews_count
-
-```sql
-CREATE TABLE website_rating 
-( 
-  avg_rating  NUMBER(2, 1), 
-  total_reviews_count  NUMBER NOT NULL
-)
-/
-```
-
 ## Ignore
 - Publishers(Optional)
 
