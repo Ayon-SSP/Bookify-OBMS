@@ -137,8 +137,8 @@ TODO: suggest subscription names
 - subscription_name (Gold, Silver, Bronze ...) TODO: suggest subscription names (royalmember, )
 - subscription_description (description about the subscription type)
 - subscription_price   (149, 199, 249 ...)
+  - subscription_duration (3M, 6M, 12M) x all are of 1M
   - Optional:
-    - subscription_duration (3M, 6M, 12M) x all are of 1M
 
 ```sql
 CREATE TABLE subscription 
@@ -328,6 +328,7 @@ CONSTRAINT FK_book_rating_customer FOREIGN KEY (customer_id) REFERENCES customer
 - order_status (pending, processing, shipped, delivered, cancelled, returned, etc.)
   - Optional:
     - required_date
+    -  salesman_id
 
 
 ```sql
