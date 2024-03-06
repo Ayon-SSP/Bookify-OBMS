@@ -11,7 +11,8 @@
 - author_id [PK]
 - author_name
 - author_bio
-- author_score   [auto calculate average ratings of all books]
+- author_score
+-    [auto calculate average ratings of all books]
 - author_image
 - author_birth_date
   - Optional:
@@ -30,9 +31,12 @@ CREATE TABLE author
   author_birth_date DATE,
 CONSTRAINT PK_author 
   PRIMARY KEY (author_id)
+CONSTRAINT CK_author_score   CHECK ((author_score >= 0 AND author_score <= 5))
 ) 
-/ 
--- (Opt) update or insert trigure if author_death_date not null then set author_email null
+/
+
+-- CREATE A TRIGGER ON USER_REVIEW TABLE SO WHEN A NEW ROCORD IS INSERTED, UPDATED AND DELETED  INTO THE TABLE, THE AUTHOR_SCORE IS UPDATED.(For this we will create a main package for calculation and in that package we will create a function to calulate average_author_rating and then we will create an insert trigger to calculate the average_author_rating when a new record is inserted into the user_review table by calling the function from that package.)
+
 ```
 
 ### book_category
@@ -51,64 +55,13 @@ CREATE TABLE book_category
   category_image  VARCHAR2(255),
 CONSTRAINT PK_book_category
   PRIMARY KEY (category_id),
-CONSTRAINT CK_author_score   CHECK ((author_score >= 0 AND author_score <= 5))
 )
 / 
 
 ```
 
-### book
-- book_id [PK]
-- book_title 
-- book_description
-- book_publish_date
-- author_id [FK-> author.author_id]
-- category_id [FK-> book_category.category_id]
-- book_price [check >=0]
-- available_quantity [check >=0] 
-- discontinued [Default: false]
-- book_cover_image
-- book_publisher
-- book_language
-- book_pages
-- book_isbn
-  - Optional:
-    - book_rating
-    - total_book_reviews
-
-
-```SQL
-CREATE TABLE book 
-( 
-  book_id  NUMBER NOT NULL, 
-  book_title  VARCHAR2(40) NOT NULL, 
-  book_description  VARCHAR2(300),
-  book_publish_date  DATE, 
-  author_id  NUMBER NOT NULL, 
-  category_id  NUMBER NOT NULL,
-  book_price  NUMBER, 
-  available_quantity  NUMBER, 
-  discontinued  NUMBER(1) NOT NULL,
-  book_cover_image VARCHAR2(255), 
-  book_publisher VARCHAR2(100),
-  book_language VARCHAR2(100),
-  book_pages NUMBER,
-  book_isbn VARCHAR2(13),
-CONSTRAINT PK_book 
-  PRIMARY KEY (book_id), 
-CONSTRAINT CK_book_book_price   CHECK ((book_price > 0)), 
-CONSTRAINT CK_book_pages   CHECK ((book_pages >= 0)), 
-CONSTRAINT CK_discontinued   CHECK ((discontinued = 0 or discontinued = 1)),
-CONSTRAINT CK_available_quantity   CHECK ((available_quantity >= 0)), 
-CONSTRAINT FK_book_author FOREIGN KEY (author_id) REFERENCES author(author_id), 
-CONSTRAINT FK_book_category FOREIGN KEY (category_id) REFERENCES book_category(category_id)
-) 
-/ 
-```
-
 ### genre
 - genre_id [PK]
-- book_id [FK-> book.book_id] [PK]
 - genre_name
 - genre_description
   - Optional:
@@ -124,11 +77,133 @@ CREATE TABLE genre
   genre_description  VARCHAR2(300), 
   genre_image  VARCHAR2(255), 
 CONSTRAINT PK_genre 
-  PRIMARY KEY (genre_id),
-CONSTRANT FK_genre_book FOREIGN KEY (book_id) REFERENCES book(book_id),
-CONSTRAINT FK_genre_book FOREIGN KEY (book_id) REFERENCES book(book_id)
+  PRIMARY KEY (genre_id)
 ) 
 / 
+```
+
+### book
+- book_id [PK]
+- book_title 
+- book_description
+- book_publish_date
+- author_id [FK-> author.author_id]
+- category_id [FK-> book_category.category_id]
+- book_price [check >=0]
+- book_discount [0.0 - 1.0]
+- available_quantity [check >=0] 
+- discontinued [Default: false]
+- book_cover_image
+- book_publisher
+- book_language
+- book_pages
+- book_isbn
+  - Optional:
+    - book_rating
+    - total_book_reviews
+
+-- 
+
+```SQL
+CREATE OR REPLACE 
+  TYPE genre_id_list AS TABLE OF NUMBER; -- Define a nested table type for genre IDs
+
+CREATE TABLE book 
+( 
+  book_id  NUMBER NOT NULL, 
+  book_title  VARCHAR2(40) NOT NULL, 
+  book_description  VARCHAR2(300),
+  book_publish_date  DATE, 
+  author_id  NUMBER NOT NULL, 
+  category_id  NUMBER NOT NULL,
+  genre_ids  genre_id_list, -- Define the column as the nested table type
+  book_price  NUMBER, 
+  book_discount  NUMBER(1) DEFAULT 0 NOT NULL,
+  available_quantity  NUMBER, 
+  discontinued  NUMBER(1) NOT NULL,
+  book_cover_image VARCHAR2(255), 
+  book_publisher VARCHAR2(100),
+  book_language VARCHAR2(100),
+  book_pages NUMBER,
+  book_isbn VARCHAR2(13) UNIQUE,
+CONSTRAINT PK_book 
+  PRIMARY KEY (book_id), 
+CONSTRAINT CK_book_book_price   CHECK ((book_price > 0)), 
+CONSTRAINT CK_book_discount   CHECK ((book_discount >= 0 AND book_discount <= 1)),
+CONSTRAINT CK_book_pages   CHECK ((book_pages >= 0)), 
+CONSTRAINT CK_discontinued   CHECK ((discontinued = 0 or discontinued = 1)),
+CONSTRAINT CK_available_quantity   CHECK ((available_quantity >= 0)), 
+CONSTRAINT FK_book_author FOREIGN KEY (author_id) REFERENCES author(author_id), 
+CONSTRAINT FK_book_category FOREIGN KEY (category_id) REFERENCES book_category(category_id),
+CONSTRAINT FK_book_genre FOREIGN KEY (genre_id) REFERENCES genre(genre_id) -- Added foreign key constraint for genre_id
+) 
+/ 
+
+DECLARE
+  v_genre_ids genre_id_list;
+BEGIN
+  -- Initialize the genre IDs for a specific book
+  v_genre_ids := genre_id_list(1, 3, 5); -- Example genre IDs
+  
+  -- Insert data into the book table
+  INSERT INTO book (
+    book_id,
+    book_title,
+    book_description,
+    book_publish_date,
+    author_id,
+    category_id,
+    genre_ids,
+    book_price,
+    available_quantity,
+    discontinued,
+    book_cover_image,
+    book_publisher,
+    book_language,
+    book_pages,
+    book_isbn
+  ) VALUES (
+    1, -- Example book_id
+    'Example Book Title',
+    'This is an example book description.',
+    TO_DATE('2024-03-05', 'YYYY-MM-DD'), -- Example publish date
+    1, -- Example author_id
+    1, -- Example category_id
+    v_genre_ids, -- Use the variable containing genre IDs
+    10.99, -- Example book price
+    100, -- Example available quantity
+    0, -- Example discontinued
+    'example_cover_image.jpg',
+    'Example Publisher',
+    'English',
+    250, -- Example number of pages
+    '9781234567890' -- Example ISBN
+  );
+END;
+/
+
+
+
+
+-- OTHER EXAMPLES TO INSERT
+
+--   write a simple plsql code to create and insert where using PL/SQL Nested Tables a table contains a column of nested table type. 
+-- 
+
+CREATE OR REPLACE TYPE nested_table AS TABLE OF VARCHAR2(100);
+/
+
+CREATE TABLE employees (
+  employee_id NUMBER,
+  employee_name VARCHAR2(100),
+  employee_address nested_table
+)
+NESTED TABLE employee_address STORE AS employee_address_tab;
+
+INSERT INTO employees VALUES (1, 'John', nested_table('Address1', 'Address2'));
+INSERT INTO employees VALUES (2, 'Smith', nested_table('Address3', 'Address4'));
+
+
 ```
 
 TODO: suggest subscription names
@@ -137,7 +212,8 @@ TODO: suggest subscription names
 - subscription_name (Gold, Silver, Bronze ...) TODO: suggest subscription names (royalmember, )
 - subscription_description (description about the subscription type)
 - subscription_price   (149, 199, 249 ...)
-  - subscription_duration (3M, 6M, 12M) x all are of 1M
+- subscription_duration (3M, 6M, 12M) x all are of 1M
+- subscription_discount (0.1, 0.2, 0.3)  - 10%, 20%, 30%
   - Optional:
 
 ```sql
@@ -148,9 +224,11 @@ CREATE TABLE subscription
   subscription_description VARCHAR2(300), 
   subscription_price NUMBER,
   subscription_duration VARCHAR2(3),
+  subscription_discount NUMBER(1, 2),
 CONSTRAINT PK_subscription 
   PRIMARY KEY (subscription_status_id),
-CONSTRAINT CK_subscription_price   CHECK ((subscription_price > 0))
+CONSTRAINT CK_subscription_price   CHECK ((subscription_price > 0)),
+CONSTRAINT CK_subscription_discount   CHECK ((subscription_discount >= 0 AND subscription_discount <= 1))
 ) 
 / 
 ```
@@ -163,8 +241,8 @@ CONSTRAINT CK_subscription_price   CHECK ((subscription_price > 0))
 - customer_phone1
 - customer_phone2
 - password_hash
-- premium_expire_date
-- subscription_status_id  [FK-> subscription.subscription_status_id]
+<!-- - premium_expire_date -->
+<!-- - subscription_status_id  [FK-> subscription.subscription_status_id] -->
   - Optional:
     - join_date
     - subscription_expire_date
@@ -179,16 +257,29 @@ CREATE TABLE customer
   customer_phone1  VARCHAR2(24) NOT NULL, 
   customer_phone2  VARCHAR2(24), 
   password_hash VARCHAR2(100),
-  subscription_status_id NUMBER NOT NULL,
-  premium_expire_date DATE,
+  -- subscription_status_id NUMBER NOT NULL,
+  -- premium_expire_date DATE,
 CONSTRAINT PK_customer 
   PRIMARY KEY (customer_id),
-CONSTRAINT FK_customer_customer_address FOREIGN KEY (subscription_status_id) REFERENCES customer_address(subscription_status_id)
+-- CONSTRAINT FK_customer_customer_address FOREIGN KEY (subscription_status_id) REFERENCES customer_address(subscription_status_id)
 ) 
 / 
 
 -- need to update the subscription_expire_date when the premium_expire_date is expired
 ```
+
+
+### subscription_log_history
+- customer_id [FK-> customer.customer_id] [PK]
+- subscription_status_id [FK-> subscription.subscription_status_id] [PK]
+- subscription_start_date -- sysdate
+- subscription_end_date -- sysdate + 6M
+  - Optional:
+    - subscription_cancel_date
+    - subscription_cancel_reason
+
+```sql
+
 
 
 ### customer_address 
@@ -324,7 +415,7 @@ CONSTRAINT FK_book_rating_customer FOREIGN KEY (customer_id) REFERENCES customer
 - shipped_date (basic algorithm to calculate the shipping date)
 - order_discount (applying discount by customer's subscription status) (initial random data insertion) "function" to calculate the total price with discount with 10 or 20% discount [auto calculated SUM(order_detail.book_price) WHERE order_id = order_detail.order_id]
 - order_total_cost (calculating with the book_price & book_discount) [auto calculated/PLSQL]
-                    - ( SUM(order_detail.book_price * (1 - order_detail.book_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2)`
+                    - ( SUM(order_detail.book_price * (1 - order_detail.book_discount) * order_detail.quantity) * (1 - order_discount) ) WHERE order_id = order.order_id   `Order Processing (point 2`
 - order_status (pending, processing, shipped, delivered, cancelled, returned, etc.)
   - Optional:
     - required_date
@@ -339,13 +430,15 @@ CREATE TABLE order
   address_type VARCHAR2(16) NOT NULL, 
   order_date  DATE, 
   shipped_date  DATE,
-  order_discount NUMBER NOT NULL,
-  -- order_total_cost NUMBER,  -- this will be calculated 
+  order_discount NUMBER NOT NULL, -- get from customer subscription status
+  order_total_cost NUMBER,  -- this will be calculated 
   order_status VARCHAR2(16),
 CONSTRAINT PK_order 
   PRIMARY KEY (order_id), 
 CONSTRAINT FK_order_customer FOREIGN KEY (customer_id) REFERENCES customer(customer_id), 
-CONSTRAINT FK_order_customer FOREIGN KEY (address_type) REFERENCES customer_address(address_type)
+CONSTRAINT FK_order_customer FOREIGN KEY (address_type) REFERENCES customer_address(address_type),
+CONSTRAINT CK_order_discount   CHECK ((order_discount >= 0 AND order_discount <= 1)),
+CONSTRAINT CK_order_total_cost   CHECK ((order_total_cost >= 0))
 ) 
 -- create a insert trigger to calculate the order_total_cost -> cancelled
 ```
@@ -355,7 +448,6 @@ CONSTRAINT FK_order_customer FOREIGN KEY (address_type) REFERENCES customer_addr
 - order_id [FK-> order.order_id] [PK]
 - book_id [FK-> book.book_id] [PK]
 - book_price [auto calculated book.book_price] 
-- book_discount [0.0 - 1.0]
 - quantity
   - Optional:
 
@@ -365,17 +457,15 @@ CREATE TABLE order_detail
   order_id  NUMBER NOT NULL, 
   book_id  NUMBER NOT NULL, 
   book_price  NUMBER NOT NULL, 
-  book_discount  NUMBER NOT NULL, 
   quantity  NUMBER NOT NULL, 
 CONSTRAINT PK_order_detail 
   PRIMARY KEY (order_id, book_id), 
 CONSTRAINT CK_book_price   CHECK ((book_price >= 0)), 
-CONSTRAINT CK_book_discount   CHECK ((book_discount >= 0 and book_discount <= 1)), 
 CONSTRAINT CK_quantity   CHECK ((quantity > 0)), 
 CONSTRAINT FK_OrderDetails_Orders FOREIGN KEY (order_id) REFERENCES order(order_id), 
 CONSTRAINT FK_OrderDetails_Products FOREIGN KEY (book_id) REFERENCES book(book_id)
 )
-/
+
 -- create a insert trigger to calculate the book_price
 -- create a avalable stock count trigger
 -- create a update trigger to update the available stock count -...
@@ -403,4 +493,54 @@ Id's starts with
 - TODO: on delete cascade or null and check ';'
 - TODO: Think about the how to give custome names to id columns
 - TODO: DISIDE THE largest limit for the id columns.
+- USING PACKAGES
+- pls_integer insted of NUMBER
+- 
 - designing all the triggers
+
+# login logout triggers, History of login and logout
+# history of every eddits made database and schema level triggers.
+# startup and shutdown triggers
+
+-----------------------------------------------------------------------------------------------------------
+### PACKAGE_CALCULATE
+- TRIGGER(FUNCTION return  calculate.get_avg_author_rating)
+
+
+
+
+
+
+### PACKAGE_OPERATIONS
+- Procedure(Book Table[price] perform update operation using DML statement operatins.set_book_discount(author_id, discount)
+- Procedure(Book Table[available_quantity]
+- increase the book count on book stock update 
+  - operation.add_book_quantity(book_id, quantity)
+- decrement the book count on book sale (triggers)
+  - operation.decrement_book_quantity(book_id, quantity)
+
+
+
+
+### Packages
+#### Operation
+  - decrement the book quantity on book sale procedure
+    - operation.pr_decrement_book_count(book_id, quantity)
+  - book order cancled so decrement the book_quantity of a book
+    - operation.pr_increment_book_count(book_id, quantity)
+  - function to calculate the price of a book_id with discount
+    - operation.fn_get_book_price(book_id)
+
+#### Calculate
+  - procedure to update the author_score
+    - operation.pr_update_author_score(author_id, book_rating)
+
+### Trigger
+
+- book_sale_trigger on order_detail -> decrement the book count on book sale
+
+- create a trigger on table user_review on insert delete and update to updat the author.author_score by calculating the average rating of all the books of the author.
+  - tr_set_author_score on user_review -> update author.author_score
+
+- triggered cart -> on order_details(auto insert the new order_id in order table) ->  update book_price in order_detail using book_price
+-
