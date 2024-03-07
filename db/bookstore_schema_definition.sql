@@ -94,7 +94,7 @@ CONSTRAINT fk_book_category
     ON DELETE CASCADE
 ) NESTED TABLE genre_ids STORE AS genre_ids_table
 /
-
+    
 -- Create table for storing customer information
 CREATE TABLE customer
 ( 
@@ -211,8 +211,6 @@ CREATE TABLE wishlist
     wishlist_name VARCHAR2(50),
     wishlist_description VARCHAR2(1000),
     wishlist_image VARCHAR2(255),
-    date_added DATE,
-    removed_date DATE,
 CONSTRAINT pk_wishlist
     PRIMARY KEY (customer_wishlist_id, customer_id),
 CONSTRAINT ck_wishlist_customer_wishlist_id
