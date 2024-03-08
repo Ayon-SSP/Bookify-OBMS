@@ -104,7 +104,9 @@ CREATE TABLE tbl_customer
     customer_phone1 VARCHAR2(24) NOT NULL,
     password_hash VARCHAR2(100),
 CONSTRAINT pk_customer 
-    PRIMARY KEY (customer_id)
+    PRIMARY KEY (customer_id),
+CONSTRAINT ck_customer_id
+    CHECK (REGEXP_LIKE(customer_id, 'cu[0-9]{5}')),
 ) 
 / 
 
