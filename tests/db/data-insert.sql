@@ -199,19 +199,33 @@ CREATE TABLE tbl_wishlist
 ( 
     customer_wishlist_id VARCHAR2(10) NOT NULL, 
     customer_id VARCHAR2(10) NOT NULL, 
-    book_id VARCHAR2(10) NOT NULL,
     wishlist_name VARCHAR2(50),
     wishlist_description VARCHAR2(1000),
     wishlist_image VARCHAR2(255),
 CONSTRAINT pk_wishlist
-    PRIMARY KEY (customer_wishlist_id, customer_id, book_id),
+    PRIMARY KEY (customer_wishlist_id, customer_id),
 CONSTRAINT ck_wishlist_customer_wishlist_id
     CHECK (REGEXP_LIKE(customer_wishlist_id, 'wi[0-9]{5}')),
 CONSTRAINT fk_wishlist_customer 
     FOREIGN KEY (customer_id) 
     REFERENCES tbl_customer(customer_id)
+    ON DELETE CASCADE
+)
+/
+
+-- Create table for storing customer wishlist items
+CREATE TABLE tbl_wishlist_item 
+( 
+    customer_wishlist_id VARCHAR2(10) NOT NULL, 
+    customer_id VARCHAR2(10) NOT NULL,
+    book_id VARCHAR2(10) NOT NULL,
+CONSTRAINT pk_wishlist_item
+    PRIMARY KEY (customer_wishlist_id, customer_id, book_id),
+CONSTRAINT fk_wishlist_item_wishlist
+    FOREIGN KEY (customer_wishlist_id, customer_id) 
+    REFERENCES tbl_wishlist(customer_wishlist_id, customer_id)
     ON DELETE CASCADE,
-CONSTRAINT fk_wishlist_book 
+CONSTRAINT fk_wishlist_item_book
     FOREIGN KEY (book_id) 
     REFERENCES tbl_book(book_id)
     ON DELETE CASCADE
@@ -292,6 +306,7 @@ CONSTRAINT fk_OrderDetails_Products
     ON DELETE CASCADE
 )
 /
+
 
 -- Insert records into tbl_book_category
 INSERT INTO tbl_book_category (category_id, category_name, category_description, category_image) VALUES ('bc00001', 'Magazines', 'Magazines are publications, usually periodical publications, that are printed or electronically published. They are generally published on a regular schedule and contain a variety of content.', 'https://www.example.com/magazines.jpg');
@@ -408,19 +423,29 @@ INSERT INTO tbl_shopping_cart (customer_id, book_id, quantity) VALUES ('cu00002'
 INSERT INTO tbl_shopping_cart (customer_id, book_id, quantity) VALUES ('cu00003', 'bo00002', 3);
 INSERT INTO tbl_shopping_cart (customer_id, book_id, quantity) VALUES ('cu00004', 'bo00004', 4);
 INSERT INTO tbl_shopping_cart (customer_id, book_id, quantity) VALUES ('cu00005', 'bo00006', 5);
+-- Insert into tbl_wishlist
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00001', 'Spring Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_1');  -- Random description using Lorem Ipsum function
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00002', 'cu00001', 'Sci-Fi Exploration', 'LoremIpsum()', 'REPLACE_IMAGE_URL_5');
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00002', 'Gift Ideas', 'Books for upcoming birthdays (friends and family)', 'REPLACE_IMAGE_URL_2');
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00002', 'cu00002', 'Mystery Thriller', 'LoremIpsum()', 'REPLACE_IMAGE_URL_6');
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00003', 'Fantasy Adventure', 'LoremIpsum()', 'REPLACE_IMAGE_URL_3');
+INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00002', 'cu00003', 'Technology Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_4');
 
--- Insert into tbl_wishlist -- dam bro not in 3NF
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00001', 'bo00007', 'Spring Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_1');  -- Random description using Lorem Ipsum function
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00001', 'bo00002', 'Spring Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_1');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00001', 'cu00001', 'bo00008', 'Spring Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_1');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00005', 'cu00001', 'bo00005', 'Sci-Fi Exploration', 'LoremIpsum()', 'REPLACE_IMAGE_URL_5');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00005', 'cu00001', 'bo00006', 'Sci-Fi Exploration', 'LoremIpsum()', 'REPLACE_IMAGE_URL_5');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00005', 'cu00001', 'bo00007', 'Sci-Fi Exploration', 'LoremIpsum()', 'REPLACE_IMAGE_URL_5');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00005', 'cu00001', 'bo00017', 'Sci-Fi Exploration', 'LoremIpsum()', 'REPLACE_IMAGE_URL_5');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00006', 'cu00002', 'bo00006', 'Mystery Thriller', 'LoremIpsum()', 'REPLACE_IMAGE_URL_6');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00002', 'cu00002', 'bo00004', 'Gift Ideas', 'Books for upcoming birthdays (friends and family)', 'REPLACE_IMAGE_URL_2');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00003', 'cu00003', 'bo00001', 'Fantasy Adventure', 'LoremIpsum()', 'REPLACE_IMAGE_URL_3');
-INSERT INTO tbl_wishlist (customer_wishlist_id, customer_id, book_id, wishlist_name, wishlist_description, wishlist_image) VALUES ('wi00004', 'cu00003', 'bo00003', 'Technology Reads', 'LoremIpsum()', 'REPLACE_IMAGE_URL_4');
+-- Insert into tbl_wishlist_item
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00001', 'cu00001', 'bo00007');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00001', 'cu00001', 'bo00002');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00001', 'cu00001', 'bo00008');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00001', 'bo00005');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00001', 'bo00006');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00001', 'bo00007');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00001', 'bo00017');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00001', 'cu00002', 'bo00004');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00002', 'bo00006');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00001', 'cu00003', 'bo00001');
+INSERT INTO tbl_wishlist_item (customer_wishlist_id, customer_id, book_id) VALUES ('wi00002', 'cu00003', 'bo00003');
+
+
+
 
 -- Insert into tbl_user_review
 INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00001', 'cu00002', 0.4, 'I enjoyed the overall story, but I felt the ending was a bit rushed.  Would recommend with a caveat about the ending.', SYSDATE - INTERVAL '3' DAY);
@@ -457,11 +482,9 @@ SELECT * FROM tbl_subscription;
 SELECT * FROM tbl_subscription_log_history;
 SELECT * FROM tbl_shopping_cart;
 SELECT * FROM tbl_wishlist;
+SELECT * FROM tbl_wishlist_item;
 SELECT * FROM tbl_user_review;
 SELECT * FROM tbl_orders;
 SELECT * FROM tbl_order_detail;
-
-
-
 
 

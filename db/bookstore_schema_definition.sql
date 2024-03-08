@@ -207,19 +207,33 @@ CREATE TABLE tbl_wishlist
 ( 
     customer_wishlist_id VARCHAR2(10) NOT NULL, 
     customer_id VARCHAR2(10) NOT NULL, 
-    book_id VARCHAR2(10) NOT NULL,
     wishlist_name VARCHAR2(50),
     wishlist_description VARCHAR2(1000),
     wishlist_image VARCHAR2(255),
 CONSTRAINT pk_wishlist
-    PRIMARY KEY (customer_wishlist_id, customer_id, book_id),
+    PRIMARY KEY (customer_wishlist_id, customer_id),
 CONSTRAINT ck_wishlist_customer_wishlist_id
     CHECK (REGEXP_LIKE(customer_wishlist_id, 'wi[0-9]{5}')),
 CONSTRAINT fk_wishlist_customer 
     FOREIGN KEY (customer_id) 
     REFERENCES tbl_customer(customer_id)
+    ON DELETE CASCADE
+)
+/
+
+-- Create table for storing customer wishlist items
+CREATE TABLE tbl_wishlist_item 
+( 
+    customer_wishlist_id VARCHAR2(10) NOT NULL, 
+    customer_id VARCHAR2(10) NOT NULL,
+    book_id VARCHAR2(10) NOT NULL,
+CONSTRAINT pk_wishlist_item
+    PRIMARY KEY (customer_wishlist_id, customer_id, book_id),
+CONSTRAINT fk_wishlist_item_wishlist
+    FOREIGN KEY (customer_wishlist_id, customer_id) 
+    REFERENCES tbl_wishlist(customer_wishlist_id, customer_id)
     ON DELETE CASCADE,
-CONSTRAINT fk_wishlist_book 
+CONSTRAINT fk_wishlist_item_book
     FOREIGN KEY (book_id) 
     REFERENCES tbl_book(book_id)
     ON DELETE CASCADE

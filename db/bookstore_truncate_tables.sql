@@ -14,6 +14,9 @@ TRUNCATE TABLE tbl_orders;
 -- Truncate table for storing user reviews
 TRUNCATE TABLE tbl_user_review;
 
+-- Truncate table for storing wishlists items
+TRUNCATE TABLE tbl_wishlist_item;
+
 -- Truncate table for storing wishlists
 TRUNCATE TABLE tbl_wishlist;
 

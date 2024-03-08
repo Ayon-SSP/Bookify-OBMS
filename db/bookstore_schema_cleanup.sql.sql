@@ -14,6 +14,9 @@ DROP TABLE tbl_orders;
 -- Drop table for storing user reviews
 DROP TABLE tbl_user_review;
 
+-- Drop table for 
+DROP TABLE tbl_wishlist_item;
+
 -- Drop table for storing wishlists
 DROP TABLE tbl_wishlist;
 
