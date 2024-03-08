@@ -150,7 +150,7 @@ CONSTRAINT pk_subscription
 CONSTRAINT ck_subscription_status_id
     CHECK (REGEXP_LIKE(subscription_status_id, 'su[0-9]{5}')),
 CONSTRAINT ck_subscription_price   
-    CHECK ((subscription_price > 0)),
+    CHECK ((subscription_price >= 0)),
 CONSTRAINT ck_subscription_discount_on_order   
     CHECK ((subscription_discount_on_order >= 0 AND subscription_discount_on_order <= 1))
 ) 
