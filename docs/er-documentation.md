@@ -50,7 +50,7 @@
 - `author_id`: Foreign key referencing tbl_author.author_id (VARCHAR2(10), Not Null)
 - `category_id`: Foreign key referencing tbl_book_category.category_id (VARCHAR2(10), Not Null)
 - `genre_ids`: Nested table type for storing genre ids (GENRE_ID_LIST)
-- `book_title`: Title of the book (VARCHAR2(40), Not Null)
+- `book_title`: Title of the book (VARCHAR2(100), Not Null)
 - `book_description`: Description of the book (VARCHAR2(1000))
 - `book_publish_date`: Date when the book was published (DATE)
 - `book_price`: Price of the book (NUMBER)
@@ -86,6 +86,7 @@
 
 **Constraints:**
 - `pk_customer`: Primary key constraint on customer_id
+- `ck_customer_id`: Ensures customer_id starts with "cu" followed by five digits
 
 ## 6. tbl_customer_address
 > Stores information about customer addresses.
@@ -118,13 +119,12 @@
 - `subscription_name`: Name of the subscription plan (VARCHAR2(30))
 - `subscription_description`: Description of the subscription plan (VARCHAR2(1000))
 - `subscription_price`: Price of the subscription plan (NUMBER)
-- `subscription_duration`: Duration of the subscription plan (VARCHAR2(1))
-- `subscription_discount_on_order`: Discount offered on book orders for subscribers (NUMBER(1, 2), Default 0)
+- `subscription_duration`: Duration of the subscription plan (NUMBER)
+- `subscription_discount_on_order`: Discount offered on book orders for subscribers (NUMBER(4,4), Default 0)
 
 **Constraints:**
 - `pk_subscription`: Primary key constraint on subscription_status_id
 - `ck_subscription_status_id`: Ensures subscription_status_id starts with "su" followed by five digits
-- `ck_subscription_duration`: Ensures subscription_duration is a single digit
 - `ck_subscription_price`: Ensures subscription_price is greater than 0
 - `ck_subscription_discount_on_order`: Ensures subscription_discount_on_order is between 0 and 1
 
@@ -175,13 +175,27 @@
 - `fk_wishlist_customer`: Foreign key constraint referencing tbl_customer.customer_id. On delete cascade ensures that if a customer is deleted, all associated wishlists are also deleted.
 - `fk_wishlist_book`: Foreign key constraint referencing tbl_book.book_id. On delete cascade ensures that if a book is deleted, the associated wishlist items are also deleted.
 
-## 11. tbl_user_review
+## 11. tbl_wishlist_item
+> Stores information about customer wishlist items.
+
+**Columns:**
+- `customer_wishlist_id`: Foreign key referencing tbl_wishlist.customer_wishlist_id (VARCHAR2(10), Not Null)
+- `customer_id`: Foreign key referencing tbl_customer.customer_id (VARCHAR2(10), Not Null)
+- `book_id`: Foreign key referencing tbl_book.book_id (VARCHAR2(10), Not Null)
+  
+**Constraints:**
+- `pk_wishlist_item`: Primary key constraint on customer_wishlist_id, customer_id, and book_id
+- `fk_wishlist_item_wishlist`: Foreign key constraint referencing tbl_wishlist.customer_wishlist_id and tbl_wishlist.customer_id. On delete cascade ensures that if a wishlist is deleted, all associated wishlist items are also deleted.
+- `fk_wishlist_item_book`: Foreign key constraint referencing tbl_book.book_id. On delete cascade ensures that if a book is deleted, the associated wishlist items are also deleted.
+
+
+## 12. tbl_user_review
 > Stores information about customer reviews on books.
 
 **Columns:**
 - `book_id`: Foreign key referencing tbl_book.book_id (VARCHAR2(10), Not Null)
 - `customer_id`: Foreign key referencing tbl_customer.customer_id (VARCHAR2(10), Not Null)
-- `book_rating`: Rating given by the customer for the book (NUMBER(1, 2))
+- `book_rating`: Rating given by the customer for the book (NUMBER(4,4))
 - `book_review`: Review text given by the customer for the book (VARCHAR2(1000))
 - `review_date`: Date when the review was submitted (DATE)
 
@@ -191,7 +205,7 @@
 - `fk_book_rating_book`: Foreign key constraint referencing tbl_book.book_id. On delete cascade ensures that if a book is deleted, all associated reviews are also deleted.
 - `fk_book_rating_customer`: Foreign key constraint referencing tbl_customer.customer_id. On delete cascade ensures that if a customer is deleted, all associated reviews are also deleted.
 
-## 12. tbl_orders
+## 13. tbl_orders
 > Stores information about customer orders.
 
 **Columns:**
@@ -208,10 +222,11 @@
 - `pk_order`: Primary key constraint on order_id
 - `ck_order_id`: Ensures order_id starts with "or" followed by five digits
 - `fk_order_customer_address_customer`: Foreign key constraint referencing tbl_customer.customer_id and tbl_customer_address.address_type. On delete cascade ensures that if a customer or address is deleted, all associated orders are also deleted.
+- `ck_customer_address_type`: Checks that the address_type is one of the predefined values ('Home', 'Office', 'Work', 'Other').
 - `ck_order_discount`: Ensures order_discount is between 0 and 1
 - `ck_order_total_cost`: Ensures order_total_cost is greater than or equal to 0
 
-## 13. tbl_order_detail
+## 14. tbl_order_detail
 > Stores detailed information about items in customer orders.
 
 **Columns:**
