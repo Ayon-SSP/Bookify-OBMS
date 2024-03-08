@@ -212,7 +212,7 @@ CREATE TABLE tbl_wishlist
     wishlist_description VARCHAR2(1000),
     wishlist_image VARCHAR2(255),
 CONSTRAINT pk_wishlist
-    PRIMARY KEY (customer_wishlist_id, customer_id),
+    PRIMARY KEY (customer_wishlist_id, customer_id, book_id),
 CONSTRAINT ck_wishlist_customer_wishlist_id
     CHECK (REGEXP_LIKE(customer_wishlist_id, 'wi[0-9]{5}')),
 CONSTRAINT fk_wishlist_customer 
