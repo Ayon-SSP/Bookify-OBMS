@@ -36,7 +36,7 @@ DROP TABLE tbl_customer;
 DROP TABLE tbl_book;
 
 -- Drop user-defined type for genre IDs list
-DROP TYPE tbl_genre_id_list;
+DROP TYPE type_genre_id_list;
 
 -- Drop table for storing book genres
 DROP TABLE tbl_genre;
