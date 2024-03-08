@@ -106,7 +106,7 @@ CREATE TABLE tbl_customer
 CONSTRAINT pk_customer 
     PRIMARY KEY (customer_id),
 CONSTRAINT ck_customer_id
-    CHECK (REGEXP_LIKE(customer_id, 'cu[0-9]{5}')),
+    CHECK (REGEXP_LIKE(customer_id, 'cu[0-9]{5}'))
 ) 
 / 
 
