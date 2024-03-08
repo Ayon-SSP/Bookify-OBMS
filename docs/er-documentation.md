@@ -54,9 +54,9 @@
 - `book_description`: Description of the book (VARCHAR2(1000))
 - `book_publish_date`: Date when the book was published (DATE)
 - `book_price`: Price of the book (NUMBER)
-- `discontinued`: Discontinued status of the book (NUMBER(1), Default 0, Not Null)
+- `discontinued`: Discontinued status of the book (NUMBER, Default 0, Not Null)
 - `book_pages`: Number of pages in the book (NUMBER)
-- `book_discount`: Discount on the book (NUMBER(1), Default 0)
+- `book_discount`: Discount on the book (NUMBER, Default 0)
 - `available_quantity`: Available quantity of the book (NUMBER)
 - `book_language`: Language of the book (VARCHAR2(100))
 - `book_publisher`: Publisher of the book (VARCHAR2(100))
@@ -120,7 +120,7 @@
 - `subscription_description`: Description of the subscription plan (VARCHAR2(1000))
 - `subscription_price`: Price of the subscription plan (NUMBER)
 - `subscription_duration`: Duration of the subscription plan (NUMBER)
-- `subscription_discount_on_order`: Discount offered on book orders for subscribers (NUMBER(4,4), Default 0)
+- `subscription_discount_on_order`: Discount offered on book orders for subscribers (NUMBER, Default 0)
 
 **Constraints:**
 - `pk_subscription`: Primary key constraint on subscription_status_id
@@ -195,7 +195,7 @@
 **Columns:**
 - `book_id`: Foreign key referencing tbl_book.book_id (VARCHAR2(10), Not Null)
 - `customer_id`: Foreign key referencing tbl_customer.customer_id (VARCHAR2(10), Not Null)
-- `book_rating`: Rating given by the customer for the book (NUMBER(4,4))
+- `book_rating`: Rating given by the customer for the book (NUMBER)
 - `book_review`: Review text given by the customer for the book (VARCHAR2(1000))
 - `review_date`: Date when the review was submitted (DATE)
 
