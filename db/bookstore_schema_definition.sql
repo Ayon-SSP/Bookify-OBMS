@@ -143,14 +143,12 @@ CREATE TABLE tbl_subscription
     subscription_name VARCHAR2(30),
     subscription_description VARCHAR2(1000), 
     subscription_price NUMBER,
-    subscription_duration VARCHAR2(1),
+    subscription_duration NUMBER,
     subscription_discount_on_order NUMBER(4, 4) DEFAULT 0,
 CONSTRAINT pk_subscription 
     PRIMARY KEY (subscription_status_id),
 CONSTRAINT ck_subscription_status_id
     CHECK (REGEXP_LIKE(subscription_status_id, 'su[0-9]{5}')),
-CONSTRAINT ck_subscription_duration   
-    CHECK (REGEXP_LIKE(subscription_status_id, '[0-9]')),
 CONSTRAINT ck_subscription_price   
     CHECK ((subscription_price > 0)),
 CONSTRAINT ck_subscription_discount_on_order   
@@ -268,7 +266,7 @@ CONSTRAINT fk_order_customer_address_customer
     REFERENCES tbl_customer_address(customer_id, address_type)
     ON DELETE CASCADE,
 CONSTRAINT ck_customer_address_type
-    CHECK (address_type IN ('Home', 'Office', 'Work' 'Other')),
+    CHECK (address_type IN ('Home', 'Office', 'Work', 'Other')),
 CONSTRAINT ck_order_discount 
     CHECK ((order_discount >= 0 
         AND order_discount <= 1)),
