@@ -67,9 +67,9 @@ CREATE TABLE tbl_book
     book_description VARCHAR2(1000),
     book_publish_date DATE,
     book_price NUMBER,
-    discontinued NUMBER(1) DEFAULT 0 NOT NULL,
+    discontinued NUMBER DEFAULT 0 NOT NULL,
     book_pages NUMBER,
-    book_discount NUMBER(1) DEFAULT 0,
+    book_discount NUMBER DEFAULT 0,
     available_quantity NUMBER,
     book_language VARCHAR2(100),
     book_publisher VARCHAR2(100),
@@ -146,7 +146,7 @@ CREATE TABLE tbl_subscription
     subscription_description VARCHAR2(1000), 
     subscription_price NUMBER,
     subscription_duration NUMBER,
-    subscription_discount_on_order NUMBER(4, 4) DEFAULT 0,
+    subscription_discount_on_order NUMBER DEFAULT 0,
 CONSTRAINT pk_subscription 
     PRIMARY KEY (subscription_status_id),
 CONSTRAINT ck_subscription_status_id
@@ -245,7 +245,7 @@ CREATE TABLE tbl_user_review
 ( 
     book_id VARCHAR2(10) NOT NULL, 
     customer_id VARCHAR2(10) NOT NULL, 
-    book_rating NUMBER(4, 4), 
+    book_rating NUMBER, 
     book_review VARCHAR2(1000), 
     review_date DATE,
 CONSTRAINT pk_book_rating
