@@ -63,7 +63,7 @@ CREATE TABLE tbl_book
     author_id VARCHAR2(10) NOT NULL,
     category_id VARCHAR2(10) NOT NULL,
     genre_ids type_genre_id_list,
-    book_title VARCHAR2(40) NOT NULL,
+    book_title VARCHAR2(100) NOT NULL,
     book_description VARCHAR2(1000),
     book_publish_date DATE,
     book_price NUMBER,
@@ -144,7 +144,7 @@ CREATE TABLE tbl_subscription
     subscription_description VARCHAR2(1000), 
     subscription_price NUMBER,
     subscription_duration VARCHAR2(1),
-    subscription_discount_on_order NUMBER(1, 2) DEFAULT 0,
+    subscription_discount_on_order NUMBER(4, 4) DEFAULT 0,
 CONSTRAINT pk_subscription 
     PRIMARY KEY (subscription_status_id),
 CONSTRAINT ck_subscription_status_id
@@ -231,7 +231,7 @@ CREATE TABLE tbl_user_review
 ( 
     book_id VARCHAR2(10) NOT NULL, 
     customer_id VARCHAR2(10) NOT NULL, 
-    book_rating NUMBER(1, 2), 
+    book_rating NUMBER(4, 4), 
     book_review VARCHAR2(1000), 
     review_date DATE,
 CONSTRAINT pk_book_rating
@@ -267,6 +267,8 @@ CONSTRAINT fk_order_customer_address_customer
     FOREIGN KEY (customer_id, address_type)
     REFERENCES tbl_customer_address(customer_id, address_type)
     ON DELETE CASCADE,
+CONSTRAINT ck_customer_address_type
+    CHECK (address_type IN ('Home', 'Office', 'Work' 'Other')),
 CONSTRAINT ck_order_discount 
     CHECK ((order_discount >= 0 
         AND order_discount <= 1)),
