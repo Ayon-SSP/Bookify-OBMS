@@ -5,7 +5,3 @@
 4. **SYSTEM**: `another administrative account` && `fewer privileges` compared to SYS.
 5. privileges: system-related tasks
 6. used for day-to-day management activities and is typically used for managing database schema objects, security, and application-related tasks
-
-
-
-### []
