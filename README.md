@@ -1,4 +1,5 @@
-# 🔖 Online Bookstore Management System (OBMS)
+# 🔖 Kitabay OBMS
+> 🐳 Online Bookstore Management System (OBMS)
 
 ## 📝 [`TO-DO`](https://mastekgroup.sharepoint.com/:x:/r/sites/DSAR/_layouts/15/Doc.aspx?sourcedoc=%7B2848B15B-01BB-4355-A183-606D3EB11455%7D&file=Participantlist.xlsx&action=default&mobileredirect=true)
 
