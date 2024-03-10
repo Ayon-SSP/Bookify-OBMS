@@ -1,0 +1,11 @@
+## ☕ Requirements
+- [ ] Database Schema
+  - [ ] Database Normalization
+  - [ ] ER Diagram @vishveshrathore20
+  - [x] Database Schema
+  - [ ] sys & system accounts in Oracle Database
+  - [ ] SQL Queries @Ayon-SSP
+    - [ ] DDL
+    - [ ] Triggers (insert) 
+    - [ ] Insert Data @GauravBohra2001
+  - [ ] ...
