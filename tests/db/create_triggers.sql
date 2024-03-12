@@ -1,8 +1,8 @@
 /*
-File: dml_triggers.sql
-Description: All the triggers and PROCEDURAL FUNCTIONS for the database
+File: bookstore_schema_definition.sql
+Description: SQL script to create tables for the Bookstore database.
 Author: @Ayon-SSP
-Date Created: 2024-03-08
+Date Created: 2024-03-07
 */
 
 
@@ -67,9 +67,9 @@ CREATE TABLE tbl_book
     book_description VARCHAR2(1000),
     book_publish_date DATE,
     book_price NUMBER,
-    discontinued NUMBER(1) DEFAULT 0 NOT NULL,
+    discontinued NUMBER DEFAULT 0 NOT NULL,
     book_pages NUMBER,
-    book_discount NUMBER(1) DEFAULT 0,
+    book_discount NUMBER DEFAULT 0,
     available_quantity NUMBER,
     book_language VARCHAR2(100),
     book_publisher VARCHAR2(100),
@@ -146,7 +146,7 @@ CREATE TABLE tbl_subscription
     subscription_description VARCHAR2(1000), 
     subscription_price NUMBER,
     subscription_duration NUMBER,
-    subscription_discount_on_order NUMBER(4, 4) DEFAULT 0,
+    subscription_discount_on_order NUMBER DEFAULT 0,
 CONSTRAINT pk_subscription 
     PRIMARY KEY (subscription_status_id),
 CONSTRAINT ck_subscription_status_id
@@ -245,7 +245,7 @@ CREATE TABLE tbl_user_review
 ( 
     book_id VARCHAR2(10) NOT NULL, 
     customer_id VARCHAR2(10) NOT NULL, 
-    book_rating NUMBER(4, 4), 
+    book_rating NUMBER, 
     book_review VARCHAR2(1000), 
     review_date DATE,
 CONSTRAINT pk_book_rating
@@ -461,25 +461,6 @@ INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, rev
 INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00004', 'cu00003', 3.3, 'The writing style was engaging, but the plot lacked some originality.', SYSDATE - INTERVAL '5' DAY);
 INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00005', 'cu00001', 4.4, 'A thought-provoking read that left me wanting more. The characters were complex and the themes were relevant.', SYSDATE - INTERVAL '7' DAY);
 INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00006', 'cu00002', 3.5, 'I loved this book! The world-building was fantastic and the characters were so well-developed. I can''t wait to read the next book in the series.', SYSDATE - INTERVAL '9' DAY);
-INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00007', 'cu00003', 4.2, 'I found the plot to be predictable and the characters to be one-dimensional. I would not recommend this book to others.', SYSDATE - INTERVAL '11' DAY);
-INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00008', 'cu00001', 3.3, 'The writing style was engaging, but the plot lacked some originality.', SYSDATE - INTERVAL '13' DAY);
-
-
-
-
-DELETE FROM tbl_user_review WHERE book_id = 'bo00009' AND customer_id = 'cu00002';
-INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00009', 'cu00002', 4.4, 'A thought-provoking read that left me wanting more. The characters were complex and the themes were relevant.', SYSDATE - INTERVAL '15' DAY);
-
-
-
-UPDATE tbl_author
-SET author_score = calculate_average_author_score('bo00009')
-WHERE author_id = (SELECT author_id FROM tbl_book WHERE book_id = 'bo00009');
-
-SELECT * FROM tbl_author;
-
-SELECT * FROM TBL_USER_REVIEW;
-
 
 
 -- Insert into tbl_orders
@@ -499,7 +480,6 @@ INSERT INTO tbl_order_detail (order_id, book_id, book_price, quantity) VALUES ('
 INSERT INTO tbl_order_detail (order_id, book_id, book_price, quantity) VALUES ('or00005', 'bo00001', 11.50, 1);  -- 1 copy of book B00009 
 
 
-
 SELECT * FROM tbl_author;
 SELECT * FROM tbl_book_category;
 SELECT * FROM tbl_genre;
@@ -515,12 +495,178 @@ SELECT * FROM tbl_user_review;
 SELECT * FROM tbl_orders;
 SELECT * FROM tbl_order_detail;
 
+
+
+
+
+-- After Insert Trigger on tbl_orders: This trigger can be used to update the customer's total order cost after an order is placed.
+CREATE OR REPLACE TRIGGER trg_update_customer_total_order_cost
+AFTER INSERT ON tbl_orders
+FOR EACH ROW
+BEGIN
+    UPDATE tbl_customer
+    SET total_order_cost = total_order_cost + :NEW.order_total_cost
+    WHERE customer_id = :NEW.customer_id;
+END;
 /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- CalculateOrderTotalCost Procedure: This procedure can calculate the total cost of an order based on the prices of the books and any applicable discounts.
+
+CREATE OR REPLACE PROCEDURE fn_calculate_order_total_cost(
+    prm_order_id IN tbl_orders.order_id%TYPE
+)
+IS
+    var_total_cost NUMBER;
+    var_order_discount NUMBER;
+BEGIN
+    SELECT SUM(book_price * quantity)
+    INTO var_total_cost
+    FROM tbl_order_detail
+    WHERE order_id = prm_order_id;
+
+    SELECT order_discount
+    INTO var_order_discount
+    FROM tbl_orders
+    WHERE order_id = prm_order_id;
+
+    var_total_cost := var_total_cost - (var_total_cost * var_order_discount);
+
+    DBMS_OUTPUT.PUT_LINE('Total Cost: ' || var_total_cost);
+END fn_calculate_order_total_cost;
+/
+
+-- Test the above procedure
+BEGIN
+    fn_calculate_order_total_cost('or00001');
+END;
+/
+
+select * from tbl_order_detail where order_id = 'or00001';
+
+
+
+-- GetCustomerSubscriptionDiscount Function
+CREATE OR REPLACE FUNCTION fn_get_customer_subscription_discount(
+    prm_customer_id IN tbl_customer.customer_id%TYPE
+) RETURN NUMBER
+IS
+    var_subscription_discount NUMBER;
+BEGIN
+    SELECT subscription_discount_on_order
+    INTO var_subscription_discount
+    FROM tbl_subscription
+    WHERE subscription_status_id = (SELECT subscription_status_id FROM tbl_subscription_log_history WHERE customer_id = prm_customer_id AND subscription_end_date > SYSDATE);
+
+    IF var_subscription_discount IS NULL THEN
+        var_subscription_discount := 0;
+    END IF;
+
+    RETURN var_subscription_discount;
+END fn_get_customer_subscription_discount;
+/
+-- Test the above function
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Customer Subscription Discount: ' || fn_get_customer_subscription_discount('cu00001') * 100 || '%');
+END;
+/
+
+
+-- CheckBookAvailability Function
+CREATE OR REPLACE FUNCTION fn_check_book_availability(
+    prm_book_id IN tbl_book.book_id%TYPE,
+    prm_quantity IN tbl_book.available_quantity%TYPE
+) RETURN BOOLEAN
+IS
+    var_available_quantity tbl_book.available_quantity%TYPE;
+BEGIN
+    SELECT available_quantity
+    INTO var_available_quantity
+    FROM tbl_book
+    WHERE book_id = prm_book_id;
+
+    IF var_available_quantity >= prm_quantity THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END fn_check_book_availability;
+/
+
+BEGIN
+    IF fn_check_book_availability('bo00009', 2) THEN
+        DBMS_OUTPUT.PUT_LINE('Book is available');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Book is not available');
+    END IF;
+END;
+/
+
+-- CalculateBookRating Function: This function can calculate the average rating of a book based on the reviews given by customers.
+CREATE OR REPLACE FUNCTION fn_calculate_book_rating(
+    prm_book_id IN tbl_book.book_id%TYPE
+) RETURN NUMBER
+IS
+    var_avg_rating NUMBER;
+BEGIN
+    SELECT AVG(book_rating)
+    INTO var_avg_rating
+    FROM tbl_user_review
+    WHERE book_id = prm_book_id
+        AND book_rating IS NOT NULL;
+    
+    IF var_avg_rating IS NULL THEN
+        var_avg_rating := 0;
+    END IF;
+
+    RETURN var_avg_rating;
+END fn_calculate_book_rating;
+/
+
+-- test the above function
+SELECT fn_calculate_book_rating('bo00009') FROM dual;
+select * from tbl_user_review where book_id = 'bo00009';
+-- 4.5 + 1.4 / 2 = 2.95
+
+
+
+DELETE FROM tbl_user_review WHERE book_id = 'bo00009' AND customer_id = 'cu00002';
+INSERT INTO tbl_user_review (book_id, customer_id, book_rating, book_review, review_date) VALUES ('bo00009', 'cu00002', 4.4, 'A thought-provoking read that left me wanting more. The characters were complex and the themes were relevant.', SYSDATE - INTERVAL '15' DAY);
+
+
+
+UPDATE tbl_author
+SET author_score = calculate_average_author_score('bo00009')
+WHERE author_id = (SELECT author_id FROM tbl_book WHERE book_id = 'bo00009');
+
+SELECT * FROM tbl_author;
+
+SELECT * FROM TBL_USER_REVIEW;
+
+
+
 
 -- Function to calculate the average author score
 CREATE OR REPLACE FUNCTION calculate_average_author_score(
-    prc_author_id IN tbl_author.author_id%TYPE,
-    prc_book_rating IN tbl_user_review.book_rating%TYPE
+    prm_author_id IN tbl_author.author_id%TYPE,
+    prm_book_rating IN tbl_user_review.book_rating%TYPE
 ) RETURN tbl_author.author_score%TYPE 
 IS
     var_author_score tbl_author.author_score%TYPE;
@@ -532,7 +678,7 @@ BEGIN
     INTO var_sum_rating, var_count
     FROM tbl_user_review
     WHERE book_rating IS NOT NULL
-        AND book_id IN (SELECT book_id FROM tbl_book WHERE author_id = prc_author_id);
+        AND book_id IN (SELECT book_id FROM tbl_book WHERE author_id = prm_author_id);
     
     IF var_sum_rating IS NULL THEN
         var_sum_rating := 0;
@@ -540,7 +686,7 @@ BEGIN
 
     DBMS_OUTPUT.PUT_LINE('Sum: ' || var_sum_rating || ' Count: ' || var_count);
 
-    var_author_score := (var_sum_rating + prc_book_rating)/(var_count + 1);
+    var_author_score := (var_sum_rating + prm_book_rating)/(var_count + 1);
 
     RETURN var_author_score;
 END calculate_average_author_score;
