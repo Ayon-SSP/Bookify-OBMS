@@ -61,25 +61,26 @@ online-bookstore-ms/
   |__ other-diagrams.uml (optional)
 
 |__ src/
-  |__ backend/
+  |__ main/
     |__ java/
-      |__ com.example.bookstore
-        |__ model/
-        |__ service/
-        |__ repository/
-        |__ util/
-    |__ resources/
-      |__ application.properties
-      |__ database.properties
-  |__ frontend/
-    |__ static/
-      |__ css/
-      |__ img/
-      |__ js/
-    |__ index.html
-    |__ components/
-    |__ pages/
-    |__ other-folders (optional)
+      |__ com/
+        |__ bookify/
+          |__ model/           // POJO classes (JavaBeans)
+          |__ dao/             // Data Access Objects (DAO)
+          |__ service/         // Business logic layer
+          |__ controller/      // Servlets for request handling
+          |__ util/            // Utility classes
+    |__ webapp/
+      |__ WEB-INF/
+        |__ lib/              // JAR files for JDBC drivers and other dependencies
+        |__ classes/          // Compiled Java classes
+        |__ web.xml           // Deployment descriptor
+      |__ resources/          // Configuration files (e.g., database.properties)
+      |__ css/                // CSS files for styling
+      |__ js/                 // JavaScript files
+      |__ images/             // Image files
+      |__ WEB-INF/
+        |__ jsp/              // JSP files for the front end
 
 |__ db/
   |__ init.sql
