@@ -31,16 +31,16 @@ GRANT DBA TO obms_admin;                   -- system-level privileges
 
 -- Display list of users
 SELECT 
-		username, 
-		default_tablespace, 
-		profile, 
-		authentication_type
-	FROM
-		dba_users 
-	WHERE 
-		account_status = 'OPEN'
-	ORDER BY
-		username; 
+	username, 
+	default_tablespace, 
+	profile, 
+	authentication_type
+FROM
+	dba_users 
+WHERE 
+	account_status = 'OPEN'
+ORDER BY
+	username; 
 
 -- Drop the 'obms_admin' user if needed
 -- DROP USER obms_admin;
