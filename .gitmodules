@@ -1,3 +1,6 @@
 [submodule "bookify-obms-console-app"]
 	path = bookify-obms-console-app
 	url = https://github.com/Ayon-SSP/bookify-obms-console-app
+[submodule "bookify-obms-webapp"]
+	path = bookify-obms-webapp
+	url = https://github.com/Ayon-SSP/bookify-obms-webapp
