@@ -1,6 +1,6 @@
 # 🛢️ Database Documentation
 
-![OBMS-ER-dIAGRAM-V2](OBMS-ER-dIAGRAM-V2.png)
+![OBMS-ER-dIAGRAM-V2](OBMS-ER-Diagram-v2-VU.png)
 ## 1. tbl_author
 > Stores information about book authors.
 
